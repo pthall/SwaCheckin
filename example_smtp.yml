@@ -1,0 +1,4 @@
+from: some_email@gmail.com
+address: smtp.gmail.com
+username: some_email@gmail.com
+password: secret
