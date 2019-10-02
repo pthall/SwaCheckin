@@ -80,7 +80,7 @@ if __name__ == "__main__":
     first_name = args['firstname']
     email = args['email']
 
-    for i in range(5,1,-1):        
+    for i in range(15,1,-1):        
         ci_data_response = retrieve_checkin_data(confirmation_number, last_name, first_name)
         if 'code' in ci_data_response:
             print('Unable to retrieve itinerary - error message below. It might be too early for check-in.')
