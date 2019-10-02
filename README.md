@@ -21,4 +21,4 @@ required named arguments:
   -l LASTNAME, --lastname LASTNAME
                         Last name
   -f FIRSTNAME, --firstname FIRSTNAME
-                        First name```
+                        First name
