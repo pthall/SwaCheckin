@@ -1,5 +1,5 @@
 # SwaCheckin
-usage: SwaCheckin.py [-h] -c CONFIRMATION -l LASTNAME -f FIRSTNAME [-e EMAIL]
+```usage: SwaCheckin.py [-h] -c CONFIRMATION -l LASTNAME -f FIRSTNAME [-e EMAIL]
 
 Check in to SWA flights exactly 24 hours in advance. Use cron or another job
 scheduler to schedule execution. After check-in, an email is sent with an
@@ -21,4 +21,4 @@ required named arguments:
   -l LASTNAME, --lastname LASTNAME
                         Last name
   -f FIRSTNAME, --firstname FIRSTNAME
-                        First name
+                        First name```
