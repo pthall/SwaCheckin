@@ -72,9 +72,9 @@ def send_email(subject, text, recipient, email_server):
         server.sendmail(FROM, TO, message)
         server.close()
         print "successfully sent email - " + subject
-    except:
-        print "failed to send email - " + subject
-              
+    except Exception as ex:
+        print "failed to send email - " + subject + " " + str(ex)
+
 if __name__ == "__main__":
     args = main(sys.argv[1:])
     confirmation_number = args['confirmation']
