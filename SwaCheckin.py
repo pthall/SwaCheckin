@@ -9,6 +9,8 @@ from os import getcwd
 
 checkin_url= 'https://mobile.southwest.com/api/mobile-air-operations/v1/mobile-air-operations/page/check-in'
 req_headers = {'Host': 'mobile.southwest.com', 'X-API-Key': 'l7xx0a43088fe6254712b10787646d1b298e'}
+# Use full absolute path so that cron job knows where to look
+path_to_smtp_settings_file = '/Users/shez/src/SwaCheckin/smtp.yml'
 
 def main(argv):
     help_msg="""\n\tSwaCheckin.py -c <confirmation #> -l <lastName> -f <firstName> [-e <email>]
@@ -48,7 +50,7 @@ def retrieve_boarding_pass(confirmation_number, last_name, first_name, traveler_
     return req.json()
 
 def email_config():
-    with open('smtp.yml', 'r') as stream:
+    with open(path_to_smtp_settings_file, 'r') as stream:
         try:
             return yaml.safe_load(stream)
         except yaml.YAMLError as ex:
