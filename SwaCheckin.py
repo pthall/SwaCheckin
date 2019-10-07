@@ -80,7 +80,8 @@ if __name__ == "__main__":
     first_name = args['firstname']
     email = args['email']
 
-    for i in range(5,0,-1):        
+	# retry check-in if error response
+    for i in range(15,0,-1):        
         ci_data_response = retrieve_checkin_data(confirmation_number, last_name, first_name)
         if 'code' in ci_data_response:
             print('Retries remaining: ' + str(i - 1) + ' -- Check-in error -- error body from SWA below.')
