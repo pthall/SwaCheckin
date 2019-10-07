@@ -80,7 +80,7 @@ if __name__ == "__main__":
     first_name = args['firstname']
     email = args['email']
 
-	# retry check-in if error response
+    # retry check-in if error response
     for i in range(15,0,-1):        
         ci_data_response = retrieve_checkin_data(confirmation_number, last_name, first_name)
         if 'code' in ci_data_response:
