@@ -69,9 +69,9 @@ def send_email(subject, text, recipient, email_server):
         server.login(email_server['username'], email_server['password'])
         server.sendmail(FROM, TO, message)
         server.close()
-        print "successfully sent email - " + subject
+        print("successfully sent email - " + subject)
     except:
-        print "failed to send email - " + subject
+        print("failed to send email - " + subject)
               
 if __name__ == "__main__":
     args = main(sys.argv[1:])
@@ -80,18 +80,17 @@ if __name__ == "__main__":
     first_name = args['firstname']
     email = args['email']
 
-    for i in range(15,1,-1):        
+    for i in range(5,0,-1):        
         ci_data_response = retrieve_checkin_data(confirmation_number, last_name, first_name)
         if 'code' in ci_data_response:
-            print('Unable to retrieve itinerary - error message below. It might be too early for check-in.')
-            print(ci_data_response['message'])
-            print('Retries remaining: ' + str(i - 2))
-            sleep(0.5)
-            if not (i - 2):
+            print('Retries remaining: ' + str(i - 1) + ' -- Check-in error -- error body from SWA below.')
+            print(ci_data_response['message'])            
+            if not (i - 1):
                 print('check-in failed')
                 if email:
                     send_email('check-in failed', confirmation_number + ' ' + last_name + ' ' + first_name, email, email_config())
                 sys.exit(1)
+            sleep(0.5)
         else:
             break    
     checkin_token = ci_data_response['checkInSessionToken']
