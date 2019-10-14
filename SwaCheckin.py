@@ -5,7 +5,7 @@ import requests
 import yaml
 from datetime import datetime
 from time import sleep
-from os import getcwd
+from os import path
 
 checkin_url= 'https://mobile.southwest.com/api/mobile-air-operations/v1/mobile-air-operations/page/check-in'
 req_headers = {'Host': 'mobile.southwest.com', 'X-API-Key': 'l7xx0a43088fe6254712b10787646d1b298e'}
@@ -18,7 +18,7 @@ def main(argv):
 email is sent with an itinerary summary and URLs for all boarding passes in a reservation. 
 An error email is sent if check-in fails. Reservations with multiple passengers will have 
 all passengers checked in and included in the itinerary summary email. The name of any 
-passenger in the reservation will work. SMTP configuration path - {getcwd()}/smtp.yml"""
+passenger in the reservation will work. SMTP configuration path - {path.dirname(path.realpath(__file__))}/smtp.yml"""
 
     parser = argparse.ArgumentParser(description = help_text)
     rn = parser.add_argument_group('required named arguments')
@@ -49,7 +49,7 @@ def retrieve_boarding_pass(confirmation, last_name, first_name, traveler_id):
     return req.json()
 
 def email_config():
-    with open(f'{getcwd()}/smtp.yml', 'r') as stream:
+    with open(f'{path.dirname(path.realpath(__file__))}/smtp.yml', 'r') as stream:
         try:
             return yaml.safe_load(stream)
         except yaml.YAMLError as ex:
