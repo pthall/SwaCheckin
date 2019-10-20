@@ -108,6 +108,13 @@ if __name__ == "__main__":
     email = args['email']
 
     resv_response = retrieve_reservation(confirmation, last_name, first_name)
+    if 'code' in resv_response:
+        print(f'error retrieving reservation -- error body from SWA below.')
+        print(resv_response['message'])
+        if email:
+            send_email('reservation not found', f'{confirmation} {last_name} {first_name}', email, email_config())
+        sys.exit(1)
+
     flight_info = resv_response['viewReservationViewPage']['shareDetails']['flightInfo'][0]
     departure_date = dateutil.parser.parse(flight_info['departureDateTime'])
     print(f"{flight_info['header']} - {flight_info['departureInfo']}\n{flight_info['title']}")
@@ -116,7 +123,7 @@ if __name__ == "__main__":
         print(f"departure in {time_delta} -- starting check-in")
     elif time_delta > timedelta(days=1):
         print(f"check-in will occur at {departure_date - timedelta(days=1)} -- {time_delta - timedelta(days=1)}")
-        sleep(time_delta.total_seconds() - timedelta(days=1).total_seconds())    
+        sleep(time_delta.total_seconds() - timedelta(days=1).total_seconds())
     else:
         print("""this reservation doesn't look eligible for check-in, but I'll try anyway
 ¯\\_(ツ)_/¯""")
