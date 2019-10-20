@@ -3,6 +3,10 @@ import argparse
 import smtplib
 import requests
 import yaml
+import pytz
+import dateutil.parser
+from datetime import datetime
+from datetime import timedelta
 from time import sleep
 from os import path
 
@@ -29,13 +33,25 @@ passenger in the reservation will work. SMTP configuration path - {path.dirname(
     return vars(parser.parse_args())
 
 
-def retrieve_checkin_data(confirmation, last_name, first_name):
-    url = f'{CHECKIN_URL}/confirmation'
+# API request for reservation summary; not dependent on check-in eligibility
+def retrieve_reservation(confirmation, last_name, first_name):
+    url = f'https://mobile.southwest.com/api/mobile-air-booking/v1/mobile-air-booking/page/view-reservation/{confirmation}'
     query = {'first-name': first_name, 'last-name': last_name}
     req = requests.get(url, headers=REQ_HEADERS, params=query)
     return req.json()
 
 
+# 'checkInSessionToken' key is included in API response
+# only when reservation is eligible for check-in
+def retrieve_checkin_data(confirmation, last_name, first_name):
+    url = f'{CHECKIN_URL}/{confirmation}'
+    query = {'first-name': first_name, 'last-name': last_name}
+    req = requests.get(url, headers=REQ_HEADERS, params=query)
+    return req.json()
+
+
+# ['checkInConfirmationPage']['flights'][0]['passengers'][0]['travelerID']
+# in API response needed to retrieve boarding pass(es)
 def checkin(confirmation, last_name, first_name, checkin_token):
     req_data = {'firstName': first_name, 'lastName': last_name, 'recordLocator': confirmation,
                 'checkInSessionToken': checkin_token}
@@ -44,14 +60,17 @@ def checkin(confirmation, last_name, first_name, checkin_token):
     return req.json()
 
 
+# ['checkInRetrieveBoardingPassPage']['mobileBoardingPassViewPage']
+# ['mobileBoardingPassView'][0] contains the boarding pass
 def retrieve_boarding_pass(confirmation, last_name, first_name, traveler_id):
-    url = f'{CHECKIN_URL}/retrieve-boarding-pass/confirmation'
+    url = f'{CHECKIN_URL}/retrieve-boarding-pass/{confirmation}'
     req_data = {'firstName': first_name, 'lastName': last_name, 'recordLocator': confirmation,
                 'travelerID': [traveler_id]}
     req = requests.post(url, headers=REQ_HEADERS, json=req_data)
     return req.json()
 
 
+# parse SMTP config file
 def email_config():
     with open(f'{path.dirname(path.realpath(__file__))}/smtp.yml', 'r') as stream:
         try:
@@ -60,6 +79,7 @@ def email_config():
             print(ex)
 
 
+# send templated emails
 def send_email(subject, text, recipient, email_config):
     FROM = email_config['from']
     TO = [recipient]
@@ -86,6 +106,20 @@ if __name__ == "__main__":
     last_name = args['lastname']
     first_name = args['firstname']
     email = args['email']
+
+    resv_response = retrieve_reservation(confirmation, last_name, first_name)
+    flight_info = resv_response['viewReservationViewPage']['shareDetails']['flightInfo'][0]
+    departure_date = dateutil.parser.parse(flight_info['departureDateTime'])
+    print(f"{flight_info['header']} - {flight_info['departureInfo']}\n{flight_info['title']}")
+    time_delta = departure_date - datetime.now().astimezone(pytz.timezone("UTC"))
+    if time_delta <= timedelta(days=1) and time_delta >= timedelta(seconds=0):
+        print(f"departure in {time_delta} -- starting check-in")
+    elif time_delta > timedelta(days=1):
+        print(f"check-in will occur at {departure_date - timedelta(days=1)} -- {time_delta - timedelta(days=1)}")
+        sleep(time_delta.total_seconds() - timedelta(days=1).total_seconds())    
+    else:
+        print("""this reservation doesn't look eligible for check-in, but I'll try anyway
+¯\\_(ツ)_/¯""")
 
     # retry check-in if error response
     for i in range(15, 0, -1):
