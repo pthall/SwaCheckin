@@ -8,6 +8,7 @@ import requests
 import yaml
 import pytz
 import dateutil.parser
+import ntplib
 from datetime import datetime
 from datetime import timedelta
 from time import sleep
@@ -109,7 +110,7 @@ def flight_info_status_filter(flight_info):
     for flight in flight_info:
         print(f"{flight['header']} - {flight['departureInfo']}\n{flight['title']}")
         departure_date = dateutil.parser.parse(flight['departureDateTime'])
-        time_delta = departure_date - datetime.now().astimezone(pytz.timezone("UTC"))
+        time_delta = departure_date - datetime.now().astimezone(pytz.timezone("UTC")) - timedelta(seconds=seconds_offset)
         if time_delta <= timedelta(days=1) and time_delta >= timedelta(seconds=0):
             print(f"departure in {time_delta} -- check-in will occur in a moment\n")
             filtered_info.append(flight)
@@ -154,6 +155,12 @@ def boarding_pass_text(passenger):
     return boarding_pass_text
 
 
+# return seconds offset between NTP time and local system time
+# positive value indicates system time is behind
+def ntp_offset():
+    return ntplib.NTPClient().request('pool.ntp.org').offset
+
+
 if __name__ == "__main__":
     args = main(sys.argv[1:])
     confirmation = args['confirmation']
@@ -169,6 +176,9 @@ if __name__ == "__main__":
             send_email('reservation not found', f'{confirmation} {last_name} {first_name}', email, email_config())
         sys.exit(1)
 
+    seconds_offset = ntp_offset()
+    print(f'NTP offset of {seconds_offset} seconds now in effect')
+
     filtered_flights = flight_info_status_filter(resv_response['viewReservationViewPage']['shareDetails']['flightInfo'])
 
     if(len(filtered_flights)):
@@ -176,7 +186,7 @@ if __name__ == "__main__":
             print("\n---- check-in queue status ----")
             print(f"{flight['header']} - {flight['departureInfo']}\n{flight['title']}")
             departure_date = dateutil.parser.parse(flight['departureDateTime'])
-            time_delta = departure_date - datetime.now().astimezone(pytz.timezone("UTC"))
+            time_delta = departure_date - datetime.now().astimezone(pytz.timezone("UTC")) - timedelta(seconds=seconds_offset)
             if time_delta <= timedelta(days=1) and time_delta >= timedelta(seconds=0):
                 print(f"departure in {time_delta} -- starting check-in\n")
                 checkin_response = start_checkin(flight)
