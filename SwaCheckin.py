@@ -15,7 +15,7 @@ from time import sleep
 from os import path
 
 CHECKIN_URL = 'https://mobile.southwest.com/api/mobile-air-operations/v1/mobile-air-operations/page/check-in'
-REQ_HEADERS = {'Host': 'mobile.southwest.com', 'X-API-Key': 'l7xx0a43088fe6254712b10787646d1b298e'}
+REQ_HEADERS = {'Host': 'mobile.southwest.com', 'X-API-Key': 'l7xx0a43088fe6254712b10787646d1b298e', 'X-Channel-ID': 'MWEB'}
 
 
 def main(argv):
